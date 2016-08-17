@@ -34,27 +34,32 @@
                               from-url :from-url
                               proto-session-path :proto-session-path}]
   (let [ext (str/trim ext)]
-    (println "Processing template:" ext type id site-id lang)
-    (let [filename (str id "." ext)
-          post-url (str to-url "/admin/billing/template/upload.mvc")
-          get-url (str from-url "/file/" filename)
-          _ (println "Loading file from" get-url)
-          body (:body (c/get get-url {:as :byte-array}))]
-      (c/post post-url
-              {:headers {"Hh-Proto-Session" (slurp proto-session-path)}
-               :multipart [{:name "lang" :content lang}
-                           {:name "type" :content type}
-                           {:name "siteId" :content site-id}
-                           {:name "file.odt" :part-name "file" :content body}]}))))
+    (try
+      (let [_ (println "Processing template:" ext type id site-id lang)
+            filename (str id "." ext)
+            post-url (str to-url "/admin/billing/template/upload.mvc")
+            get-url (str from-url "/file/" filename)
+            _ (println "Loading file from" get-url)
+            body (:body (c/get get-url {:as :byte-array}))]
+        (c/post post-url
+                {:headers {"Hh-Proto-Session" (slurp proto-session-path)}
+                 :multipart [{:name "lang" :content lang}
+                             {:name "type" :content type}
+                             {:name "siteId" :content site-id}
+                             {:name "file.odt" :part-name "file" :content body}]}))
+      true
+      (catch Throwable t
+        (println "ERROR proceccing template" ext type id site-id lang t)))))
 
 (defn migrate [config]
   (println "Config:")
   (clojure.pprint/pprint config)
   (println "=====================")
-  (let [templates (get-template-data config)]
-    (doall (map (fn [t] (get-and-load-template t config)) templates))
+  (let [templates (get-template-data config)
+        _ (println "Starting. Templates count:" (count templates))
+        done (doall (map (fn [t] (get-and-load-template t config)) templates))]
     (println "=====================")
-    (println "Done. Loaded" (count templates) "files.")))
+    (println "Done. Loaded" (str (count (filter true? done)) "/" (count templates)) "files.")))
 
 (defn -main [& args]
   (let [config (edn/read-string (slurp "config.edn"))]

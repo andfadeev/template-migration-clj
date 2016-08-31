@@ -46,6 +46,12 @@ join (
 select 'BILL' as type, value::int, site_id, lang from translation 
 where name = 'admin.templates.billVfsFileId'
 union
+select 'BILL_UA_WITHOUT_VAT' as type, value::int, site_id, lang from translation 
+where name = 'admin.templates.bill.ua.oldVfsFileId'
+union
+select 'BILL_BY_INDIVIDUAL' as type, value::int, site_id, lang from translation 
+where name = 'admin.templates.bill.by.individualVfsFileId'
+union
 select 'AGREEMENT' as type, value::int, site_id, lang from translation 
 where name = 'admin.templates.agreementVfsFileId'
 union
@@ -53,6 +59,12 @@ select 'AGREEMENT_HRSPACE' as type, value::int, site_id, lang from translation
 where name = 'admin.templates.agreement_jcVfsFileId'
 ) t on t.value = bf.billing_file_id
 order by t.type, t.site_id, t.lang;
+```
+
+Если нужно залить шаблон на докер стенд, то нужно прокинуть тунель до рабочей машины из контейнера hh-bbo-webapp, а в настройках указать to-url: localhost:<порт на рабочей машине>
+```
+#> ssh -f -N -R 9091:172.17.0.17:9090 afadeev@10.208.24.175
+#> ssh -f -N -R <порт на рабочей машине>:<ip контейнера>:9090 <имя пользователя>@<ip рабочей машины>
 ```
 
 Запускать из командной строки в директории с файлом config.edn (из корня проекта)

@@ -32,7 +32,6 @@ ext;type;billing-file-id;site-id;lang
 ```
 odt;AGREEMENT;11373661;1;EN
 odt;AGREEMENT;16389376;1;RU
-docx;AGREEMENT;15169958;75;RU
 odt;AGREEMENT_HRSPACE;16391573;1;RU
 odt;BILL;16380731;20;RU
 odt;BILL;16380731;21;RU
@@ -57,6 +56,9 @@ where name = 'admin.templates.agreementVfsFileId'
 union
 select 'AGREEMENT_HRSPACE' as type, value::int, site_id, lang from translation 
 where name = 'admin.templates.agreement_jcVfsFileId'
+union
+select 'BILL_SBERBANK' as type, value::int, site_id, lang from translation 
+where name = 'admin.templates.sberbankVfsFileId'
 ) t on t.value = bf.billing_file_id
 order by t.type, t.site_id, t.lang;
 ```
